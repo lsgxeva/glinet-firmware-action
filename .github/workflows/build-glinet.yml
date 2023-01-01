@@ -1,0 +1,79 @@
+name: build glinet firmware
+
+on:
+  workflow_dispatch:
+    inputs:
+      device:
+        description: '选择设备'     
+        required: true
+        default: 'target_wlan_ap-gl-axt1800' 
+        type: choice
+        options:
+        - target_wlan_ap-gl-ax1800
+        - target_wlan_ap-gl-axt1800
+        - target_wlan_ap-gl-ax1800-5-4
+        - target_wlan_ap-gl-axt1800-5-4
+        - target_ipq40xx_gl-a1300
+        - target_mt7981_gl-mt2500
+        
+      ui:
+        description: '是否包含官方UI (GL-A1300不支持)'
+        required: false
+        type: boolean
+
+      dlg:
+        description: '是否仅打包下载glinet (GL-A1300不支持)'
+        required: false
+        type: boolean
+
+      dlo:
+        description: '是否仅打包下载文件openwrt (GL-A1300不支持)'
+        required: false
+        type: boolean
+        
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v3
+    - name: update
+      run: |
+        sudo apt update
+        sudo apt upgrade -y
+        sudo apt install -y ack antlr3 aria2 asciidoc autoconf automake autopoint binutils bison build-essential bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib git git-core gperf haveged help2man intltool lib32gcc1 libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libreadline-dev libssl-dev libz-dev zlib1g-dev libtool lrzsz mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python2.7 python3 python3-pip python3-setuptools python3-yaml libpython3-dev qemu-utils rsync scons squashfs-tools subversion swig texinfo uglifyjs upx upx-ucl unzip time rsync vim wget xmlto xxd 
+        git config --global user.email "abc@xyz.com"
+        git config --global user.name "abc"
+    - name: make 
+      run: |
+        ./build.sh ~ ${{ inputs.device }} ${{ inputs.ui }} ${{ inputs.dlg }} ${{ inputs.dlo }} 
+        
+    - name: Organize files
+      id: organize
+      if: true && !failure() && !cancelled()
+      run: |
+        cd ~/openwrt/artifact
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        echo "::set-output name=status::success"
+        
+    - name: Upload firmware directory
+      uses: actions/upload-artifact@main
+      if: steps.organize.outputs.status == 'success' && !cancelled() && !failure()
+      with:
+        name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+        path: ${{ env.FIRMWARE }}
+            
+    - name: Generate release tag
+      id: tag
+      if: true && !failure() && !cancelled()
+      run: |
+        echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
+        echo "::set-output name=status::success"
+        
+    - name: Upload firmware to release
+      uses: softprops/action-gh-release@v1
+      if: steps.tag.outputs.status == 'success' && !cancelled() && !failure()
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag.outputs.release_tag }}
+        files: ${{ env.FIRMWARE }}/*

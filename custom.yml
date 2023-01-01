@@ -1,0 +1,19 @@
+feeds:
+  - name: custom
+    path: ../feeds_dir/custom
+  - name: helloworld
+    uri: https://github.com/fw876/helloworld.git
+    branch: master
+packages:
+  - luci-app-mwan3
+
+
+
+diffconfig: |
+  CONFIG_PACKAGE_wpad-basic=n
+  CONFIG_PACKAGE_wpad=n
+  CONFIG_PACKAGE_dnsmasq=n
+  CONFIG_PACKAGE_luci-i18n-ddns-zh-cn=y
+  CONFIG_LUCI_LANG_zh_Hans=y
+  CONFIG_BUSYBOX_CUSTOM=y
+  CONFIG_BUSYBOX_CONFIG_FEATURE_FLOAT_SLEEP=y

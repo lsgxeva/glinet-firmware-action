@@ -1,0 +1,31 @@
+# git repertory project configuration 
+[core] 
+	repositoryformatversion = 0 
+	filemode = true 
+	bare = false 
+	logallrefupdates = true 
+	symlinks = true 
+	ignorecase = false 
+	autocrlf = false 
+	safecrlf = warn 
+[http] 
+	sslVerify = false 
+[user] 
+	name = lsgxeva 
+	email = lsgxthink@gmail.com 
+[remote "origin"] 
+	url = https://github.com/lsgxeva/glinet-firmware-action.git 
+	fetch = +refs/heads/*:refs/remotes/origin/* 
+[remote "upstream"]
+	url = https://github.com/luochongjun/glinet-firmware-action.git 
+	fetch = +refs/heads/*:refs/remotes/upstream/* 
+[remote "gitee"] 
+	url = https://gitee.com/lsgx/glinet-firmware-action.git 
+	fetch = +refs/heads/*:refs/remotes/local/* 
+[branch "master"] 
+	remote = origin 
+	merge = refs/heads/master 
+[branch "mydev"]
+	remote = origin
+	merge = refs/heads/mydev
+
